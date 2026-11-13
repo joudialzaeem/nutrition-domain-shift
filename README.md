@@ -1,168 +1,157 @@
-# Nutritional Estimation Under Domain Shift — Code Submission
+# Nutritional Estimation Under Domain Shift
 
-This package contains the cleaned code and compact reproducibility material for the MSc Data Science research module evaluating nutritional estimation under domain shift from Nutrition5k to FoodBD.
+Code and experimental results for my MSc Data Science Research Module at the University of Potsdam.
 
-## Main experimental pipeline
+This project investigates how well image-based nutritional estimation models generalize from Nutrition5k to FoodBD. I trained three pretrained architectures—ResNet50, EfficientNet-B0 and ViT-B/16—to predict calories, protein, carbohydrates and fat from RGB food images. I then evaluated them on FoodBD and investigated whether unsupervised domain adaptation using Maximum Mean Discrepancy (MMD) could improve their performance.
 
-1. `prepare_nutrition5k_data.py`
-   Reproduces the final Nutrition5k curation, grouped train/validation split, and training-only target scaler.
+## Datasets
 
-2. `train_model.py`
-   Trains ImageNet-pretrained ResNet50, EfficientNet-B0, and ViT-B/16 for four-output regression: calories, protein, carbohydrates, and fat.
+### Nutrition5k
 
-3. `prepare_foodbd_data.py`
-   Reproduces the final 1,833-image nutrition-labelled FoodBD metadata table.
+- [Official Nutrition5k repository](https://github.com/google-research-datasets/Nutrition5k)
+- [Google Cloud Storage download](https://console.cloud.google.com/storage/browser/nutrition5k_dataset)
 
-4. `evaluate_foodbd.py`
-   Evaluates the frozen source-trained models on FoodBD.
+Nutrition5k was used as the labelled source dataset. I used overhead RGB images and the corresponding nutritional metadata, rather than depth images.
 
-5. `adapt_mmd.py`
-   Performs unsupervised MMD feature alignment using labelled Nutrition5k source data and FoodBD train+valid images without nutrition labels.
+The original overhead split was used to select the images. After excluding unavailable and problematic entries, the curated dataset contained 3,227 dishes:
 
-6. `evaluate_mmd_foodbd.py`
-   Evaluates the adapted models on the untouched 180-image FoodBD test set.
+| Split | Images |
+|---|---:|
+| Training | 2,245 |
+| Validation | 484 |
+| Test | 498 |
 
-7. `analyze_mmd_statistics.py`
-   Reproduces the paired bootstrap, Wilcoxon signed-rank tests, and Holm correction using the baseline and MMD prediction CSVs included in the results folder.
+The official training/test separation was preserved. The training pool was divided into training and validation sets using a collection-date-based grouped split. Nutritional targets were standardized using statistics calculated from the training set only.
 
-8. `analyze_nutritional_shift.py`
-   Reproduces the final target-distribution diagnostic.
+### FoodBD
 
-9. `run_foodbd_image_diagnostics_verified.py`
-   Recomputes the verified FoodBD image-quality proxies and 24 Spearman tests with Holm correction.
+- [FoodBD dataset — Mendeley Data, Version 2](https://data.mendeley.com/datasets/xh3ghf3jbg/2)
 
-10. `make_foodbd_diagnostic_figures.py`
-    Recreates the two brightness scatterplots and the selected-case contact sheet.
+FoodBD was used to evaluate generalization to a different dataset of smartphone food photographs. The original dataset contains 1,837 images with nutritional annotations. Four entries could not be matched to the dataset metadata, leaving 1,833 images for this project.
 
-11. `evaluate_five_meals.py`
-    Runs the six frozen model variants on the 25 personal meal photographs.
+| Split | Images |
+|---|---:|
+| Training | 1,288 |
+| Validation | 365 |
+| Test | 180 |
 
-12. `analyze_five_meals.py`
-    Reproduces the descriptive five-meal error and photography-condition summaries.
+The source-trained models were initially evaluated on all 1,833 prepared FoodBD images. For the reported external test results and before/after MMD comparisons, I used only the 180 held-out test images.
 
-## Frozen dataset choices
+The 1,653 FoodBD training and validation images were used without nutritional labels during MMD adaptation.
 
-Nutrition5k:
-- 3,227 final cleaned dishes
-- 2,245 train
-- 484 validation
-- 498 untouched test
-- target standardization fitted on the training split only
+Both original datasets are available under Creative Commons Attribution 4.0 (CC BY 4.0). Please refer to their original repositories and publications for attribution and dataset details.
 
-FoodBD:
-- 1,833 nutrition-labelled images
-- 1,288 train
-- 365 validation
-- 180 held-out test
-- train+valid images were used without nutrition labels for MMD
-- the 180-image test set was reserved for final evaluation
+## Models and experimental pipeline
 
-## Verified diagnostic results
+Three ImageNet-pretrained architectures were used:
 
-The nutritional-shift script reproduces:
-- overall nutritional distance vs aggregate standardized prediction error: Spearman rho = 0.46244
-- carbohydrate distance vs carbohydrate error: rho = 0.42844
-- closest quartile: 132.67 kcal and 11.78 g carbohydrate mean absolute error
-- furthest quartile: 199.42 kcal and 38.00 g carbohydrate mean absolute error
+- ResNet50
+- EfficientNet-B0
+- ViT-B/16
 
-The verified image diagnostics are included under `results/image_diagnostics/`.
+Each model was trained for four-output nutritional regression on the curated Nutrition5k dataset.
 
-The five-meal analysis is descriptive only. It uses five meals, five photo conditions, and six frozen model variants.
+The main experiments consisted of source-domain training, direct FoodBD evaluation, MMD adaptation and evaluation of the adapted models on the same 180 FoodBD test images.
 
-## MMD statistical validation
+The scripts are organized as follows:
 
-The repository includes the original FoodBD prediction CSVs for
-all three source-trained models (1,833 images each), along with
-the MMD-adapted predictions for the 180 held-out test images.
+| Script | Purpose |
+|---|---|
+| `prepare_nutrition5k_data.py` | Apply the final quality exclusions and generate splits and the target scaler from the selected source metadata |
+| `prepare_foodbd_data.py` | Prepare the 1,833-image FoodBD metadata table |
+| `train_model.py` | Train the three source-domain models |
+| `evaluate_foodbd.py` | Evaluate the source-trained models on FoodBD |
+| `adapt_mmd.py` | Perform unsupervised MMD adaptation |
+| `evaluate_mmd_foodbd.py` | Evaluate adapted models on the held-out FoodBD test set |
+| `analyze_mmd_statistics.py` | Calculate paired errors, bootstrap intervals, Wilcoxon tests and Holm correction |
+| `analyze_nutritional_shift.py` | Analyze nutritional distance and prediction errors |
+| `run_foodbd_image_diagnostics_verified.py` | Analyze image characteristics and their associations with prediction errors |
+| `make_foodbd_diagnostic_figures.py` | Generate selected diagnostic plots and example images |
+| `evaluate_five_meals.py` | Run the six trained model variants on 25 additional meal photographs |
+| `analyze_five_meals.py` | Summarize five-meal errors and photography-condition effects |
 
-The paired results are in
-`results/mmd_before_after_statistics.csv`.
+The detailed sequence of commands is documented in `RUN_ORDER.md`.
 
-`code/analyze_mmd_statistics.py` can reproduce the paired
-bootstrap confidence intervals, Wilcoxon tests, and Holm
-correction using these saved prediction files.
+## Main results
 
-After Holm correction, the significant findings are:
-- EfficientNet-B0: protein MAE improved
-- ViT-B/16: protein MAE improved
-- ViT-B/16: carbohydrate MAE worsened
+All three models performed substantially worse on FoodBD than on the Nutrition5k test set, showing a considerable generalization gap.
 
-No other model-target comparison was significant after
-Holm correction.
+MMD adaptation improved some outputs, but the improvements were not consistent across architectures or nutritional targets.
 
-## Included files and reproducibility
+After Holm correction for the 12 model-target comparisons, three changes were statistically significant:
 
-The repository includes:
-- 12 Python scripts in `code/`
-- Six original HPC SLURM scripts in `slurm/`
-- Prepared dataset metadata and split assignments in `data/`
-- Saved model predictions, statistical results, and diagnostics
-  in `results/`
-- Selected figures in `figures/`
-- `requirements.txt`, `RUN_ORDER.md`, and this README
+| Model | Nutrient | Before MAE | After MAE | Result |
+|---|---|---:|---:|---|
+| EfficientNet-B0 | Protein | 18.69 g | 17.21 g | Improved |
+| ViT-B/16 | Protein | 16.01 g | 12.42 g | Improved |
+| ViT-B/16 | Carbohydrates | 17.17 g | 20.55 g | Worsened |
 
-The original SLURM scripts retain the paths and Conda environment
-used on the University of Potsdam HPC. They document the original
-jobs and may need changes before running on another system.
+All other comparisons were not statistically significant after Holm correction.
 
-The full image datasets, six trained `.pt` model checkpoints,
-and original HPC execution logs are not included in this compact
-repository. They are retained separately in the original project
-backup.
+Additional analyses examined nutritional differences between datasets and image characteristics such as brightness, contrast, dark-pixel fraction and edge density. The five-meal experiment was used as a small descriptive robustness study and was not intended to provide statistically generalizable conclusions.
 
-Expected locations for additional inputs:
+## Repository contents
+
+- `code/` — 12 Python scripts
+- `slurm/` — six original HPC submission scripts
+- `data/` — selected metadata, prepared splits and target standardization
+- `results/` — saved predictions, evaluation metrics and statistical results
+- `figures/` — selected diagnostic figures
+- `RUN_ORDER.md` — execution sequence
+- `requirements.txt` — Python dependencies
+- `MANIFEST.csv` — file list and SHA-256 checksums
+
+The repository contains the per-image source-model predictions for all 1,833 FoodBD images and MMD-model predictions for the held-out 180-image test set.
+
+The original paired statistical results are saved in `results/mmd_before_after_statistics.csv`.
+
+## Reproducing the analyses
+
+After installing the dependencies listed in `requirements.txt`, the saved MMD prediction results can be analyzed without retraining the models:
+
+```bash
+python code/analyze_mmd_statistics.py
+```
+
+The nutritional-shift analysis can be reproduced from the included prepared data:
+
+```bash
+python code/analyze_nutritional_shift.py
+```
+
+The original image diagnostics require the corresponding FoodBD test photographs. Reproducing model training and inference requires the original dataset images and a compatible PyTorch environment.
+
+Expected locations for these additional inputs are:
+
 - Nutrition5k images: `data/images/`
 - FoodBD images: `data/foodbd_eval_1833/images/`
-- Model checkpoints: `checkpoints/`
-- FoodBD diagnostic image ZIP: `data/foodbd_test_images.zip`
-- Five-meal photos:
-  `five_meal_study/images/5 meals images/`
+- Trained model checkpoints: `checkpoints/`
+- FoodBD test-image archive: `data/foodbd_test_images.zip`
+- Additional five-meal images: `five_meal_study/images/5 meals images/`
 
-The prepared metadata and saved predictions allow the reported
-statistics to be checked without retraining the models.
-The full training and inference pipeline requires the omitted
-images, appropriate model checkpoints, and a compatible
-PyTorch environment.
+The code uses the image paths recorded in the prepared metadata, so the original directory structure and file names need to be preserved.
 
-The Nutrition5k preparation script starts from the selected
-metadata supplied in this repository. It does not independently
-recreate the original dish selection from the raw dataset download.
+The six trained `.pt` checkpoints, original image archives and full HPC execution logs are not included in this compact repository because of their size. They have been retained separately in the original project backup.
 
-Dataset and metadata redistribution conditions should be checked
-before making the repository public.
+The Nutrition5k preparation script starts from the selected metadata used for this project; it does not independently download and select all images from the complete original dataset.
 
-## HPC environment
+## Computing environment
 
-University of Potsdam HPC
-Tesla V100, 16 GB
-PyTorch 2.5.1+cu121
-torchvision 0.20.1+cu121
-Conda environment: `nutritionml`
+The original experiments were run on the University of Potsdam HPC cluster using:
 
-Main Python dependencies:
-PyTorch, torchvision, pandas, NumPy, Pillow, scikit-learn, SciPy, statsmodels, OpenCV, Matplotlib.
+- NVIDIA Tesla V100 GPU (16 GB)
+- PyTorch 2.5.1+cu121
+- torchvision 0.20.1+cu121
+- Conda environment: `nutritionml`
 
+The main dependencies include PyTorch, torchvision, NumPy, pandas, Pillow, scikit-learn, SciPy, statsmodels, OpenCV and Matplotlib.
 
-## GitHub submission layout
+The original SLURM scripts are included to document the HPC jobs. They contain cluster-specific paths and environment settings and may need to be adjusted when running on another system.
 
-This version includes the original six SLURM scripts in `slurm/`.
-They retain the HPC-specific paths used for the original runs.
+## Dataset attribution
 
-The prepared Nutrition5k split is located at:
-`data/nutrition5k_model_splits.csv`
+**Nutrition5k:** Thames, Q., Karpur, A., Norris, W., Xia, F., Panait, L., Weyand, T., & Sim, J. (2021). *Nutrition5k: Towards Automatic Nutritional Understanding of Generic Food.* Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition, 8903–8911.
 
-The prepared FoodBD table is located at:
-`data/foodbd_eval_1833/foodbd_evaluation_1833.csv`
+**FoodBD:** Ahmed, B., Haque, M. E., Huq, A. K. O., Ali, M. E., Masud, M., & Naznin, M. *FoodBD: A Polygon-Annotated Meal Image Dataset of Bangladeshi Cuisine with Visual and Nutritional Labels.* Mendeley Data, Version 2. https://doi.org/10.17632/xh3ghf3jbg.2
 
-Full original-model FoodBD predictions, MMD predictions and the
-paired statistical results are included in `results/`.
-
-Raw dataset photographs and the six trained `.pt` checkpoints
-are not included in this compact package. Re-running inference
-or training requires those files to be placed in the directories
-expected by the scripts.
-
-The five-meal analysis outputs are in `results/five_meal/`.
-The original photos are required only to rerun inference.
-
-The original HPC backup has been retained separately.
+Both datasets are credited to their original authors and remain subject to their respective CC BY 4.0 terms.
