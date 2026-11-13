@@ -99,7 +99,6 @@ Additional analyses examined nutritional differences between datasets and image 
 - `figures/` — selected diagnostic figures
 - `RUN_ORDER.md` — execution sequence
 - `requirements.txt` — Python dependencies
-- `MANIFEST.csv` — file list and SHA-256 checksums
 
 The repository contains the per-image source-model predictions for all 1,833 FoodBD images and MMD-model predictions for the held-out 180-image test set.
 
