@@ -1,0 +1,13 @@
+model,target,before_mae,after_mae,percent_change,holm_significant_0.05,interpretation
+resnet50,calories,153.889405,130.4298,-15.24,False,not significant after Holm correction
+resnet50,protein,17.917857,16.60119,-7.35,False,not significant after Holm correction
+resnet50,carbs,18.518924,19.65732,6.15,False,not significant after Holm correction
+resnet50,fat,5.620878,5.85943,4.24,False,not significant after Holm correction
+efficientnet_b0,calories,147.547098,137.74182,-6.65,False,not significant after Holm correction
+efficientnet_b0,protein,18.694198,17.209995,-7.94,True,significant improvement
+efficientnet_b0,carbs,17.518496,17.68118,0.93,False,not significant after Holm correction
+efficientnet_b0,fat,6.727558,6.65496,-1.08,False,not significant after Holm correction
+vit_b_16,calories,143.955985,133.18195,-7.48,False,not significant after Holm correction
+vit_b_16,protein,16.01164,12.416944,-22.45,True,significant improvement
+vit_b_16,carbs,17.171813,20.54701,19.66,True,significant worsening
+vit_b_16,fat,6.202791,5.90447,-4.81,False,not significant after Holm correction

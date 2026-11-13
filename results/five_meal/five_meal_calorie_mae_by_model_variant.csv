@@ -1,0 +1,7 @@
+model,variant,ae_calories
+efficientnet_b0,mmd,114.46402327755445
+efficientnet_b0,source,148.72743371750562
+resnet50,mmd,97.39239193842826
+resnet50,source,88.00551835172091
+vit_b_16,mmd,183.84885432907586
+vit_b_16,source,185.6660330557741

@@ -1,0 +1,6 @@
+meal_id,meal,portion,calories_kcal,protein_g,carbs_g_min,carbs_g_max_exclusive,fat_g,label_basis
+1,Pizza (340 g),340g pizza,875.00,36.00,82.00,82.00,43.00,Rounded manufacturer full-portion label
+2,Turkey 125 g + potatoes 330 g,125g turkey + 330g potatoes,457.20,32.78,52.45,52.45,11.60,Whole-pack per-100-g nutritional label scaled by package weight
+3,Tuna salad with included dressing (310 g),310g total salad plus supplied dressing,415.40,16.43,18.60,18.60,29.14,Whole-pack per-100-g nutritional label scaled by package weight
+4,Hühnerfrikassee (480 g),480g meal,427.00,22.00,67.00,67.00,5.80,Rounded manufacturer full-portion label
+5,Prawns 250 g + bulgur salad 220 g,250g prawns + 220g bulgur salad,610.40,34.98,60.94,62.19,23.10,Whole-pack per-100-g nutritional label scaled by package weight; prawns list carbs <0.5 g/100 g

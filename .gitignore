@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+*.out
+*.err
+checkpoints/
+data/images/
+data/foodbd_eval_1833/images/
+data/foodbd_test_images.zip
+five_meal_study/images/
